@@ -26,7 +26,7 @@ const Annoucement = styled.section`
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 11;
+  z-index: 1;
   background: ${COLORS.white};
   color: ${COLORS.black};
   padding: 10px 20px;
@@ -72,7 +72,7 @@ const Navigation = () => {
         </Link>
         <Cart onClick={() => setToggle(true)}>CART</Cart>
       </Container>
-      {toggle && <CartModal setToggle={setToggle} toggle={toggle} />}
+      <CartModal setToggle={setToggle} toggle={toggle} />
     </>
   );
 };

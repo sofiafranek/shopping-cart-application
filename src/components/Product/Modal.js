@@ -119,7 +119,7 @@ const ProductModal = (props) => {
   const [success, setSuccess] = React.useState(false);
 
   const addItemToCart = () => {
-    addItem(props, 1);
+    addItem(props);
     setSuccess(true);
 
     setTimeout(() => {

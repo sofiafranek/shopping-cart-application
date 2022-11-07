@@ -4,6 +4,7 @@ import Image from "next/image";
 
 import BREAKPOINTS from "../styles/breakpoints";
 import COLORS from "../styles/colors";
+import TYPO from "../styles/typography";
 
 import useBlockScroll from "../hooks/useBlockScroll";
 import UpdateCart from "../hooks/updateCart";
@@ -11,7 +12,7 @@ import UpdateCart from "../hooks/updateCart";
 const Container = styled.div`
   position: fixed;
   z-index: 2;
-  padding: 20px 30px;
+  padding: 20px 30px 60px;
   border-left: 1px solid ${COLORS.black};
   top: 0;
   right: 0;
@@ -21,15 +22,20 @@ const Container = styled.div`
   color: ${COLORS.black};
   overflow-y: auto;
   overflow-x: hidden;
+  transform: ${(props) => (props.show ? "translateX(0)" : "translateX(100%)")};
+  transition: transform 0.4s cubic-bezier(0.45, 0, 0.55, 1);
 
   ${BREAKPOINTS.min.small`
     width: 500px;
-    padding: 20px 60px;
-  `}
-
-  ${BREAKPOINTS.min.medium`
+    padding: 20px 60px 60px;
+  `} ${BREAKPOINTS.min.medium`
     width: 700px;
-  `}
+  `};
+`;
+
+const Div = styled.div`
+  display: flex;
+  justify-content: space-between;
 `;
 
 const Header = styled.div`
@@ -75,11 +81,17 @@ const ButtonContainer = styled.div`
   justify-content: space-between;
 `;
 
+const Pricing = styled.div`
+  display: flex;
+`;
+
 const HeadingTwo = styled.h2`
   padding: 60px 0 0;
 `;
 
 const HeadingThree = styled.h3``;
+
+const HeadingFive = styled.h5``;
 
 const AlternativeButton = styled.button`
   background: ${COLORS.black};
@@ -102,6 +114,11 @@ const Span = styled.span`
   margin: 0 10px;
 `;
 
+const DiscountPrice = styled.span`
+  ${TYPO.h3}
+  margin: 0 10px;
+`;
+
 const Form = styled.form`
   margin: 0 0 20px;
 `;
@@ -118,8 +135,8 @@ const Input = styled.input`
 `;
 
 const Cart = ({ toggle, setToggle }) => {
-  const { cart, updateItem, removeItem } = UpdateCart();
-  const [discountCode, setDiscountCode] = React.useState(false);
+  const { cart, updateItem, removeItem, discount, updateDiscount } =
+    UpdateCart();
   const [errorMessage, setErrorMessage] = React.useState(false);
 
   // prevents scrolling of window when modal is open
@@ -144,16 +161,19 @@ const Cart = ({ toggle, setToggle }) => {
     const discountCode = document.getElementById("discount").value;
 
     if (discountCode === "DISCOUNT") {
-      setDiscountCode(true);
+      updateDiscount(true);
+      setErrorMessage(false);
+    } else if (discountCode === "") {
+      updateDiscount(false);
       setErrorMessage(false);
     } else {
-      setDiscountCode(false);
+      updateDiscount(false);
       setErrorMessage(true);
     }
   };
 
   return (
-    <Container>
+    <Container show={toggle}>
       <Header>
         <HeadingTwo>Cart</HeadingTwo>
         <AlternativeButton onClick={() => setToggle(false)}>
@@ -173,7 +193,29 @@ const Cart = ({ toggle, setToggle }) => {
                   layout="responsive"
                 />
               </ImageWrapper>
-              <HeadingThree key={item.key}>{item.title}</HeadingThree>
+              <Div>
+                <HeadingThree>{item.title}</HeadingThree>
+                {discount === "true" && (
+                  <HeadingFive>
+                    Discount applied: {item.discountPercentage}%
+                  </HeadingFive>
+                )}
+              </Div>
+              <Pricing>
+                <HeadingThree
+                  style={{
+                    textDecoration:
+                      discount === "true" ? "line-through" : "none"
+                  }}
+                >
+                  £{item.price}
+                </HeadingThree>
+                {discount === "true" && (
+                  <DiscountPrice>
+                    £{item.price - item.discountPercentage * item.quantity}
+                  </DiscountPrice>
+                )}
+              </Pricing>
               <ButtonContainer>
                 <div>
                   <Button onClick={() => updateItem(item.id, -1)}>-</Button>
@@ -200,15 +242,27 @@ const Cart = ({ toggle, setToggle }) => {
               <Button type="submit">APPLY</Button>
             </Form>
             {errorMessage && <Message>Invalid discount code</Message>}
-            <HeadingThree>
-              Total price: £
-              {discountCode ? totalPrice - discountTotal : totalPrice}
-            </HeadingThree>
+            <Pricing>
+              <HeadingThree>
+                Total price:{" "}
+                <span
+                  style={{
+                    textDecoration:
+                      discount === "true" ? "line-through" : "none"
+                  }}
+                >
+                  {totalPrice}
+                </span>
+              </HeadingThree>
+              {discount === "true" && (
+                <DiscountPrice>£{totalPrice - discountTotal}</DiscountPrice>
+              )}
+            </Pricing>
           </div>
           <AlternativeButton>Pay now</AlternativeButton>
         </Footer>
       )}
-      {cart.length > 0 && discountCode && (
+      {cart.length > 0 && discount === "true" && (
         <div>
           <Message>Discount code applied!</Message>
           <Message>Total savings £{discountTotal}</Message>

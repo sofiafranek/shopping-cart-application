@@ -4,17 +4,21 @@ import React from "react";
 
 const UpdateCart = () => {
   let [cart, setCart] = React.useState([]);
+  const [discount, setDiscount] = React.useState();
 
   let localCart;
+  let localDiscount;
 
   if (typeof window !== "undefined") {
     localCart = localStorage.getItem("cart");
+    localDiscount = localStorage.getItem("discount");
   }
 
   React.useEffect(() => {
     localCart = JSON.parse(localCart);
     if (localCart) setCart(localCart);
-  }, []);
+    if (localDiscount) setDiscount(localDiscount);
+  }, [localCart, localDiscount]);
 
   const addItem = (item) => {
     //create a copy of our cart state, avoid overwritting existing state
@@ -81,12 +85,22 @@ const UpdateCart = () => {
     localStorage.setItem("cart", cartString);
   };
 
+  const updateDiscount = (value) => {
+    //update state and local
+    setDiscount(value);
+
+    localStorage.setItem("discount", JSON.parse(value));
+  };
+
   return {
     cart,
     setCart,
     addItem,
     updateItem,
-    removeItem
+    removeItem,
+    discount,
+    setDiscount,
+    updateDiscount
   };
 };
 
